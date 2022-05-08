@@ -3,20 +3,19 @@ use ggez::graphics::*;
 use ggez::event::*;
 use ggez_egui::*;
 
+mod drawing;
+use drawing::scene::*;
+
 struct State {
     dt: std::time::Duration,
-    logo: Image,
-    position: [f32; 2],
-    rotation: f32,
-    rotation_speed: f32,
-    scale: f32,
-    egui_backend: EguiBackend
+    egui_backend: EguiBackend,
+    scene: drawing::scene::Scene
 }
 
 impl ggez::event::EventHandler<GameError> for State {
   fn update(&mut self, ctx: &mut Context) -> GameResult {
     self.dt = timer::delta(ctx);
-    self.rotation += (self.dt.as_millis() as f32) *self.rotation_speed/1000.0;
+    self.scene.update(self.dt.as_millis() as f32);
 		let egui_ctx = self.egui_backend.ctx();
 		egui::Window::new("egui-window").show(&egui_ctx, |ui| {
 			ui.label("a very nice gui :3");
@@ -31,7 +30,7 @@ impl ggez::event::EventHandler<GameError> for State {
   }
   fn draw(&mut self, ctx: &mut Context) -> GameResult {
     graphics::clear(ctx, graphics::Color::BLACK);
-    graphics::draw(ctx, &self.logo, graphics::DrawParam::default().dest(self.position).rotation(self.rotation).scale([self.scale, self.scale]).offset([0.5, 0.5]))?;
+    graphics::draw(ctx, &self.scene, ([0.0, 0.0],))?;
 		graphics::draw(ctx, &self.egui_backend, ([0.0, 0.0],))?;
     graphics::present(ctx)?;
     Ok(())
@@ -57,18 +56,33 @@ fn main() {
         .build()
         .unwrap();
 
-    let state = State {
+    let mut state = State {
         dt: std::time::Duration::new(0, 0),
-        logo: Image::new(
+        rotation_speed: 5.0,
+        egui_backend: EguiBackend::default(),
+
+        scene: drawing::scene::Scene::new()
+    };
+
+    let mut object1 = crate::drawing::scene::object::Object::new(Box::new(Image::new(
             &mut ctx,
             std::path::Path::new("/logo.png")
-        ).unwrap(),
-        position: [size(&ctx).0/2.0, size(&ctx).1/2.0],
-        rotation: 0.0,
-        rotation_speed: 5.0,
-        scale: 0.4,
-        egui_backend: EguiBackend::default(),
-    };
+        ).unwrap()));
+
+    object1.add_component(Box::new(drawing::scene::object::component::test_component::TestComponent::new(5.0)));
+    object1.position = [size(&ctx).0/2.0, size(&ctx).1/2.0];
+    object1.scale = 0.4;
+    state.scene.add_object(object1);
+
+    let mut object2 = crate::drawing::scene::object::Object::new(Box::new(Image::new(
+            &mut ctx,
+            std::path::Path::new("/logo.png")
+        ).unwrap()));
+
+    object2.add_component(Box::new(drawing::scene::object::component::test_component::TestComponent::new(-2.0)));
+    object2.position = [size(&ctx).0/4.0, size(&ctx).1/4.0];
+    object2.scale = 0.2;
+    state.scene.add_object(object2);
 
     event::run(ctx, event_loop, state);
 }
