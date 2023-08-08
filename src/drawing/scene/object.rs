@@ -4,7 +4,7 @@ use ggez::graphics::*;
 pub mod component;
 
 pub struct Object {
-    pub drawable: Box<dyn ggez::graphics::Drawable>,
+    pub drawable: ggez::graphics::Image,
     pub position: [f32; 2],
     pub rotation: f32,
     pub scale: f32,
@@ -13,7 +13,7 @@ pub struct Object {
 }
 
 impl Object {
-    pub fn new(drawable: Box<dyn ggez::graphics::Drawable>) -> Object {
+    pub fn new(drawable: ggez::graphics::Image) -> Object {
         return Object {
             drawable: drawable,
             position: [0.0, 0.0],

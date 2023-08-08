@@ -1,5 +1,6 @@
 use ggez::*;
 use ggez::graphics::*;
+use ggez::context::*;
 
 pub mod object;
 
@@ -26,21 +27,13 @@ impl Scene {
 }
 
 impl ggez::graphics::Drawable for Scene {
-    fn draw(&self, ctx: &mut Context, param: DrawParam) -> GameResult {
+    fn draw(&self, ctx: &mut Canvas, param: impl Into<DrawParam>) {
         for object in &self.objects {
-            object.drawable.draw(ctx, graphics::DrawParam::default().dest(object.position).rotation(object.rotation).scale([object.scale, object.scale]).offset([0.5, 0.5]))?;
+            object.drawable.draw(ctx, graphics::DrawParam::default().dest(object.position).rotation(object.rotation).scale([object.scale, object.scale]).offset([0.5, 0.5]));
         }
-        Ok(())
     }
 
-    fn dimensions(&self, ctx: &mut Context) -> Option<Rect> {
-        return None;
-    }
-
-    fn set_blend_mode(&mut self, mode: Option<BlendMode>) {
-    }
-
-    fn blend_mode(&self) -> Option<BlendMode> {
+    fn dimensions(&self, gfx: &impl Has<GraphicsContext>) -> Option<Rect> {
         return None;
     }
 }
